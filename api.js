@@ -58,9 +58,13 @@ io.on('connection', (socket) => {
 });
 
 io.on('connection', (socket) => {
-    socket.on('spin', (msg) => {
+    socket.on('spin', async (msg) => {
         //send to random user
-        io.emit('chat message', msg + " spin");
+        const allUsers = await db.fetch('users')
+        const randomUser = allUsers[Math.floor(Math.random() * allUsers.length)];
+        console.log(randomUser.UsocketId)
+        io.to(randomUser.UsocketId).emit('chat message', msg)
+        // io.emit('chat message', msg + " spin");
     });
     socket.on('wild', (msg) => {
         //send to X random users
@@ -71,6 +75,21 @@ io.on('connection', (socket) => {
         socket.broadcast.emit("chat message", msg + " blast")
     });
 });
+
+//save the socketid to db for further usage - once logged in
+io.on('connection', (socket) => {
+    socket.on('setSocketId', async (data) => {
+        await db.update('users', { UsocketId: data.socketId }, { Uemail: data.email })
+        console.log({ data })
+    })
+})
+
+//set socket id to 0 once disconnected
+io.on('connection', (socket) => {
+    socket.on('disconnect', async function () {
+        await db.update('users', { UsocketId: '0' }, { UsocketId: socket.id })
+    })
+})
 
 server.listen(PORT, () => {
     console.log(`listening on port ${PORT}`);

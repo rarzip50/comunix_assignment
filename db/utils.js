@@ -59,8 +59,6 @@ exports.add = (tableName, data) => {
 };
 
 exports.get = (tableName, predicate) => {
-    return `select * from ${tableName} where ${jsonToEqualsKeyValue(
-        predicate,
-        "and "
-    )}`;
+    return `select * from ${tableName} ${predicate ? 'where' + jsonToEqualsKeyValue(
+        predicate, "and ") : ""}`;
 };

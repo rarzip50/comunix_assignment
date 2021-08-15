@@ -8,6 +8,23 @@ var connection = mysql.createConnection({
     database: 'comunix_assignment'
 });
 
+exports.update = async function (tableName, data, predicate) {
+    const command = utils.update(tableName, data, predicate)
+    return new Promise((resolve, reject) => {
+        connection.query(command, function (error, results, fields) {
+            if (error) {
+                reject(error)
+                console.log(error)
+            } else {
+                resolve(results)
+                console.log("updating data, sql is: " + command)
+                console.log(`Data updated successfully`)
+            }
+            console.log("_____________________________________")
+        })
+    })
+}
+
 exports.add = async function (tableName, data) {
     const command = utils.add(tableName, data)
     return new Promise((resolve, reject) => {
