@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Socket.IO chat</title>
+    <style>
+        body {
+            margin: 0;
+            padding-bottom: 3rem;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        #form {
+            background: rgba(0, 0, 0, 0.15);
+            padding: 0.25rem;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            height: 3rem;
+            box-sizing: border-box;
+            backdrop-filter: blur(10px);
+        }
+
+
+
+        #input {
+            border: none;
+            padding: 0 1rem;
+            flex-grow: 1;
+            border-radius: 2rem;
+            margin: 0.25rem;
+        }
+
+        #input:focus {
+            outline: none;
+        }
+
+        button {
+            background: #333;
+            border: none;
+            padding: 0 1rem;
+            margin: 0.25rem;
+            border-radius: 3px;
+            outline: none;
+            color: #fff;
+        }
+
+        #messages {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #messages>li {
+            padding: 0.5rem 1rem;
+        }
+
+        #messages>li:nth-child(odd) {
+            background: #efefef;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="display: none;" id="chat">
+        <ul id="messages"></ul>
+        <form id="form" action="">
+            <input id="input" autocomplete="off" /><button id="blast">Blast</button><button
+                id="wild">Wild</button><button id="spin">Spin</button>
+        </form>
+    </div>
+    <div style="display: none; width: 30%; margin: auto;" id="login">
+        <h1>Login</h1>
+        <form id="loginForm" action="">
+            <input placeholder="Email" id="email" autocomplete="off" />
+            <input placeholder="Password" id="password" autocomplete="off" />
+            <button id="loginBtn">Login</button>
+            <button id="signupBtn">SignUp</button>
+        </form>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        const socket = io();
+
+        const blastBtn = document.getElementById("blast")
+        const wildBtn = document.getElementById("wild")
+        const spinBtn = document.getElementById("spin")
+        const form = document.getElementById('form');
+        const input = document.getElementById('input');
+        const chat = document.getElementById('chat');
+        const login = document.getElementById('login');
+        const loginBtn = document.getElementById('loginBtn')
+        const signupBtn = document.getElementById('signupBtn')
+        const password = document.getElementById('password')
+        const email = document.getElementById('email')
+
+
+
+        blastBtn.addEventListener("click",
+            (e) => emitMessage(e, "blast"))
+
+        wildBtn.addEventListener("click",
+            (e) => emitMessage(e, "wild"))
+
+        spinBtn.addEventListener("click",
+            (e) => emitMessage(e, "spin"))
+
+        function emitMessage(event, messageType) {
+            event.preventDefault()
+            if (input.value) {
+                socket.emit(messageType, input.value);
+                input.value = '';
+            }
+        }
+
+        loginBtn.addEventListener('click', async function (e) {
+            e.preventDefault()
+            try {
+                await axios.post('/login', { email: email.value, password: password.value })
+            } catch (e) {
+                alert(e.message)
+            }
+        })
+
+        socket.on('chat message', function (msg) {
+            let item = document.createElement('li');
+            item.textContent = msg;
+            messages.appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+
+        socket.on('blastMessage', function (msg) {
+            let item = document.createElement('li');
+            item.textContent = msg;
+            messages.appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+
+        socket.on('authentication process', function () {
+            //check if cookie exists
+            //if there is one we will test it with the server
+            //if there isn't we will send the user to connect or register window
+            const { sessionCookie, mailCookie } = document.cookie;
+            if (sessionCookie && mailCookie) {
+                //test if correct in db - if the user connected
+                // axios.post('/checkSession')
+            } else { //send to connection window and set cookies to undefined
+                document.cookie.sessionCookie = undefined
+                document.cookie.mailCookie = undefined
+                chat.style.display = "none"
+                login.style.display = "block"
+
+            }
+        })
+    </script>
+</body>
+
+</html>
