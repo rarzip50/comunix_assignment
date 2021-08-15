@@ -76,8 +76,12 @@
         <form id="loginForm" action="">
             <input placeholder="Email" id="email" autocomplete="off" />
             <input placeholder="Password" id="password" autocomplete="off" />
-            <button id="loginBtn">Login</button>
-            <button id="signupBtn">SignUp</button>
+            <div>
+                <button id="loginBtn">Login</button>
+                <button id="signupBtn">SignUp</button>
+
+            </div>
+            <input style="width: 350px;" id="message"></input>
         </form>
     </div>
     <script src="/socket.io/socket.io.js"></script>
@@ -96,7 +100,7 @@
         const signupBtn = document.getElementById('signupBtn')
         const password = document.getElementById('password')
         const email = document.getElementById('email')
-
+        const message = document.getElementById('message')
 
 
         blastBtn.addEventListener("click",
@@ -119,9 +123,21 @@
         loginBtn.addEventListener('click', async function (e) {
             e.preventDefault()
             try {
-                await axios.post('/login', { email: email.value, password: password.value })
+                const res = await axios.post('/login', { email: email.value, password: password.value })
+                chat.style.display = "block"
+                login.style.display = "none"
             } catch (e) {
-                alert(e.message)
+                message.value = "No user with these credentials"
+            }
+        })
+
+        signupBtn.addEventListener('click', async function (e) {
+            e.preventDefault()
+            try {
+                const tt = await axios.post('/signup', { email: email.value, password: password.value })
+                message.value = "Signed in successfully, try logging in :)"
+            } catch (e) {
+                message.value = "User is already in the system, try something else man"
             }
         })
 

@@ -4,6 +4,7 @@ const http = require('http');
 const dotenv = require('dotenv');
 const { json } = require('express');
 const db = require('./db/dbHandling')
+const utils = require('./db/utils')
 
 dotenv.config();
 
@@ -24,9 +25,28 @@ app.get('/', (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-    console.log(req.body)
-    const user = await db.fetch("users", { Uemail: "rarzip50@gmail.com", password: "121233" }, "Uemail")
-    console.log({ user })
+    try {
+        const { email, password } = req.body
+        const user = await db.fetch("users", { Uemail: email, Upassword: password })
+        if (user.length === 1) {
+            res.send(200)
+            //send cookie
+        } else if (user.length === 0) {
+            throw new Error('No users found')
+        }
+    } catch (e) {
+        res.status(500).send(e.message)
+    }
+});
+
+app.post('/signup', async (req, res) => {
+    try {
+        const { email, password } = req.body
+        await db.add("users", { Uemail: email, Upassword: password })
+        res.send(200)
+    } catch (e) {
+        res.status(500).send(e.message)
+    }
 });
 
 io.on('connection', (socket) => {

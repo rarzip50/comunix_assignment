@@ -1,4 +1,6 @@
 var mysql = require('mysql');
+const utils = require('./utils')
+
 var connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
@@ -6,29 +8,35 @@ var connection = mysql.createConnection({
     database: 'comunix_assignment'
 });
 
-async function add(tableName, params) {
-    connection.connect();
+exports.add = async function (tableName, data) {
+    const command = utils.add(tableName, data)
     return new Promise((resolve, reject) => {
-        connection.query(generateSql("SELECT", fields, tableName, params), function (error, results, fields) {
-            connection.end();
+        connection.query(command, function (error, results, fields) {
             if (error) {
                 reject(error)
+                console.log(error)
+            } else {
+                resolve(results)
+                console.log("adding data, sql is: " + command)
+                console.log(`Data added successfully`)
             }
-            resolve(results[0])
+            console.log("_____________________________________")
         })
     })
 }
 
-async function fetch(tableName, params, fields) {
-    connection.connect();
-    console.log("sql is: " + generateSql("SELECT", fields, tableName, params))
+async function fetch(tableName, predicate) {
+    const command = utils.get(tableName, predicate)
     return new Promise((resolve, reject) => {
-        connection.query(generateSql("SELECT", fields, tableName, params), function (error, results, fields) {
-            connection.end();
+        connection.query(command, function (error, results, fields) {
             if (error) {
                 reject(error)
+                console.log(error)
             }
             resolve(results)
+            console.log("fetching data, sql is: " + command)
+            console.log(`Data returned from db is: ${JSON.stringify(results, undefined, 2)}`)
+            console.log("_____________________________________")
         })
     })
 }
@@ -46,3 +54,6 @@ function generateSql(method, fields, tables, params) {
     const inserts = [fields, tables, params];
     return mysql.format(sql, inserts);
 }
+
+
+
