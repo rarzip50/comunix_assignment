@@ -58,21 +58,21 @@ io.on('connection', (socket) => {
 });
 
 io.on('connection', (socket) => {
-    socket.on('spin', async (msg) => {
+    socket.on('spin', async (data) => {
+        console.log({ data })
         //send to random user
         const allUsers = await db.fetch('users')
         const randomUser = allUsers[Math.floor(Math.random() * allUsers.length)];
-        console.log(randomUser.UsocketId)
-        io.to(randomUser.UsocketId).emit('chat message', msg)
-        // io.emit('chat message', msg + " spin");
+        io.to(randomUser.UsocketId).emit('chat message', { msg: data.msg, sender: data.sender })
     });
-    socket.on('wild', (msg) => {
+    socket.on('wild', (data) => {
         //send to X random users
-        io.emit('chat message', msg + " wild");
+        io.emit('chat message', { msg: data.msg, sender: data.sender });
     });
-    socket.on('blast', (msg) => {
+    socket.on('blast', (data) => {
+        console.log("msg blasting")
         //send to all users - broadcast
-        socket.broadcast.emit("chat message", msg + " blast")
+        socket.broadcast.emit("chat message", { msg: data.msg, sender: data.sender })
     });
 });
 
